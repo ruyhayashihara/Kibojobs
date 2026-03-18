@@ -12,6 +12,9 @@ const registerSchema = z.object({
   email: z.string().email('E-mail inválido'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
   role: z.enum(['seeker', 'company']),
+  corporate_number: z.string().optional(),
+  legal_structure: z.string().optional(),
+  representative_name: z.string().optional()
 });
 
 const Register = () => {
@@ -35,14 +38,22 @@ const Register = () => {
     setLoading(true);
     setError(null);
     try {
+      const authDataPayload = {
+        name: data.name,
+        role: data.role,
+      };
+
+      if (data.role === 'company') {
+        authDataPayload.corporate_number = data.corporate_number;
+        authDataPayload.legal_structure = data.legal_structure;
+        authDataPayload.representative_name = data.representative_name;
+      }
+
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
-          data: {
-            name: data.name,
-            role: data.role,
-          }
+          data: authDataPayload
         }
       });
 
@@ -54,7 +65,11 @@ const Register = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        navigate('/dashboard');
+        if (data.role === 'company') {
+          navigate('/empresa/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }, 3000);
       
     } catch (error) {
@@ -132,15 +147,59 @@ const Register = () => {
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-1">
-                {type === 'company' ? 'Nome da Empresa' : 'Seu Nome Completo'}
+                {type === 'company' ? 'Nome da Empresa Oficial' : 'Seu Nome Completo'}
               </label>
               <input
                 {...register('name')}
                 type="text"
+                placeholder={type === 'company' ? 'Ex: Kojima Productions Ltd' : 'Ex: João da Silva'}
                 className={`block w-full rounded-xl border-none bg-slate-50 text-slate-900 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100 ${errors.name ? 'ring-2 ring-red-300' : ''}`}
               />
               {errors.name && <p className="mt-1 text-xs text-red-500 font-medium">{errors.name.message}</p>}
             </div>
+
+            {type === 'company' && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">法人番号 (Corporate Number)</label>
+                    <input
+                      {...register('corporate_number')}
+                      type="text"
+                      required
+                      placeholder="Ex: 1234567890123"
+                      maxLength={13}
+                      className="block w-full rounded-xl border-none bg-slate-50 text-slate-900 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">Estrutura Legal</label>
+                    <select
+                      {...register('legal_structure')}
+                      required
+                      className="block w-full rounded-xl border-none bg-slate-50 text-slate-900 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100 cursor-pointer"
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="KK">Kabushiki Kaisha (KK)</option>
+                      <option value="GK">Godo Kaisha (GK)</option>
+                      <option value="Individual">Empreendedor Individual</option>
+                      <option value="Other">Outro</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Representante Legal (CEO/Presidente)</label>
+                  <input
+                    {...register('representative_name')}
+                    type="text"
+                    required
+                    placeholder="Nome do responsável pela empresa"
+                    className="block w-full rounded-xl border-none bg-slate-50 text-slate-900 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
+                  />
+                </div>
+              </>
+            )}
 
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-1">E-mail</label>
