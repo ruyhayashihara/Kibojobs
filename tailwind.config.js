@@ -7,8 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#0057FF",
-        "primary-dark": "#0046CC",
+        // Asymmetric Forest Palette
+        primary: "#064E3B", // Forest Green
+        "primary-dark": "#022C22",
+        accent: "#BEF264", // Neon Lime
+        "accent-dark": "#A3E635",
+        "accent-light": "#D9F99D",
+        base: "#F8FAFC", // Slate 50
+        surface: "#FFFFFF",
       },
       fontFamily: {
         sans: ['"DM Sans"', 'sans-serif'],

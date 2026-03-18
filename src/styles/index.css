@@ -4,19 +4,19 @@
 
 @layer base {
   body {
-    @apply text-gray-900 bg-gray-50 antialiased font-sans;
+    @apply text-slate-900 bg-base antialiased font-sans selection:bg-accent selection:text-primary-dark;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-bold text-gray-900;
+    @apply font-heading font-extrabold text-slate-900 tracking-tight;
   }
 }
 
 @layer utilities {
   .btn-primary {
-    @apply bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-accent hover:bg-accent-dark text-primary-dark font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(190,242,100,0.39)] hover:shadow-[0_6px_20px_rgba(190,242,100,0.23)] hover:-translate-y-0.5 active:scale-95;
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95;
   }
 }

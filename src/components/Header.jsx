@@ -10,8 +10,8 @@ const Header = () => {
   const { session, profile, logout } = useAuthStore();
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-40 bg-opacity-90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-4 z-50 mx-4 sm:mx-6 lg:mx-8 bg-white/80 backdrop-blur-xl border border-slate-200/50 shadow-sm rounded-2xl transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">

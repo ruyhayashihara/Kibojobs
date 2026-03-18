@@ -14,12 +14,12 @@ const AdSlot = ({ size = 'leaderboard' }) => {
     }
   };
 
+  // Utilizando o placeholder.com para simular banners visuais de anúncio de forma elegante e não-intrusiva
+  const adImageURL = `https://via.placeholder.com/${size === 'leaderboard' ? '728x90' : size === 'sidebar' ? '300x600' : '728x150'}/F1F5F9/94A3B8?text=An%C3%BAncio+Teste+(${size})`;
+
   return (
-    <div className={`bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200 overflow-hidden mx-auto ${getAdStyle()}`}>
-      <div className="text-center">
-        <span className="text-sm block mb-1 uppercase tracking-wider">Espaço Publicitário</span>
-        <span className="text-xs opacity-50">{size}</span>
-      </div>
+    <div className={`bg-slate-50/50 backdrop-blur-sm border border-slate-200/50 rounded-2xl flex flex-col items-center justify-center text-slate-400 overflow-hidden mx-auto transition-all duration-300 hover:shadow-md ${getAdStyle()}`}>
+      <img src={adImageURL} alt="Ad Placeholder" className="w-full h-full object-cover mix-blend-multiply opacity-80 hover:opacity-100 transition-opacity" />
       {/* 
         Google AdSense Placeholder
         <ins className="adsbygoogle"

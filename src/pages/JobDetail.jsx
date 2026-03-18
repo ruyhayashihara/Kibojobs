@@ -38,6 +38,35 @@ const JobDetail = () => {
     }
   }, [id]);
 
+  const handleSaveJob = async () => {
+    if (!session) {
+      alert("Por favor, faça login como candidato para salvar vagas e mostrar interesse.");
+      return;
+    }
+
+    // Check if user is seeker
+    if (session.user.user_metadata?.role && session.user.user_metadata.role !== 'seeker') {
+      alert("Apenas candidatos podem salvar vagas como favoritas.");
+      return;
+    }
+
+    const { error } = await supabase.from('saved_jobs').insert({
+      user_id: session.user.id,
+      job_id: job.id
+    });
+    
+    if (error) {
+      if (error.code === '23505') {
+        alert("Você já salvou esta vaga anteriormente!");
+      } else {
+        alert("Erro ao salvar vaga. O recurso pode estar indisponível no mock mode.");
+        console.error(error);
+      }
+    } else {
+      alert("Vaga salva com sucesso! Seu perfil (idade, sexo, idioma, etc.) agora está visível para a empresa.");
+    }
+  };
+
   if (loading) return <div className="py-20 text-center text-gray-500">Carregando...</div>;
   if (!job) return <div className="py-20 text-center text-gray-500">Vaga não encontrada</div>;
 
@@ -84,7 +113,7 @@ const JobDetail = () => {
                   Candidatar-se
                 </button>
                 <div className="flex gap-2">
-                  <button className="flex-1 flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                  <button onClick={handleSaveJob} className="flex-1 flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                     <BookmarkPlus size={20} className="mr-2 text-gray-500" /> Salvar
                   </button>
                   <button className="flex justify-center items-center p-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors tooltip" title="Compartilhar">
