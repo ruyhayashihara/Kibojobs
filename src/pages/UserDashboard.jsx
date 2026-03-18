@@ -6,7 +6,7 @@ import { Bookmark, User, Settings, Loader2, CheckCircle2 } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 
 const UserDashboard = () => {
-  const { profile, setProfile } = useAuthStore();
+  const { session, profile, setProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState('vagas-salvas');
   const [savedJobs, setSavedJobs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -47,9 +47,12 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!profile?.id) return;
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', profile.id).single();
+      const userId = profile?.id || session?.user?.id;
+      if (!userId) return;
+
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
       if (data) {
+        if (!profile) setProfile(data);
         reset({
           name: data.name || '',
           address: data.address || '',
@@ -65,6 +68,11 @@ const UserDashboard = () => {
           japanese_level_katakana: data.japanese_level_katakana || 0,
           japanese_level_kanji: data.japanese_level_kanji || 0
         });
+      } else if (error && error.code === 'PGRST116') {
+        // Tenta contornar se o trigger falhou e recria o profile manualmente
+        const newProfile = { id: userId, role: 'seeker', name: session?.user?.user_metadata?.name || 'Candidato' };
+        await supabase.from('profiles').insert(newProfile);
+        setProfile(newProfile);
       }
     };
     
@@ -74,24 +82,28 @@ const UserDashboard = () => {
     setSavedJobs([
       { id: '1', title: 'Desenvolvedor React Pleno', companies: { name: 'Acme Corp' }, location: 'Tokyo, JP', work_mode: 'Híbrido', job_type: 'Full-time', salary_min: 400000, salary_max: 600000 }
     ]);
-  }, [profile, reset]);
+  }, [session, profile?.id, reset, setProfile]);
 
   const onSubmitProfile = async (data) => {
     try {
       setLoading(true);
       setSaveSuccess(false);
 
-      if (!profile?.id) {
-        throw new Error("Perfil de usuário não carregado. Recarregue a página.");
+      const userId = profile?.id || session?.user?.id;
+      if (!userId) {
+        throw new Error("Sessão não autenticada. Faça login novamente.");
       }
 
-      // Evita o erro do PostgreSQL de sintaxe inválida ("") para colunas do tipo date
+      // Evita o erro do PostgreSQL de sintaxe inválida ("") para colunas do tipo date e numéricas
       const payload = { ...data };
       if (!payload.visa_expiry_date) {
         payload.visa_expiry_date = null;
       }
+      if (payload.age === '' || isNaN(payload.age)) {
+        payload.age = null;
+      }
 
-      const { error } = await supabase.from('profiles').update(payload).eq('id', profile.id);
+      const { error } = await supabase.from('profiles').update(payload).eq('id', userId);
       
       if (error) throw error;
 
@@ -107,6 +119,10 @@ const UserDashboard = () => {
       setLoading(false);
     }
   };
+
+  if (!session) {
+    return <div className="p-10 text-center text-slate-500 font-medium">Carregando painel do candidato...</div>;
+  }
 
   if (profile && profile.role !== 'seeker') {
     return <div className="p-10 text-center text-slate-500 font-medium">Dashboard restrito para candidatos.</div>;
