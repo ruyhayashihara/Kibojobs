@@ -10,7 +10,8 @@ ADD COLUMN IF NOT EXISTS japanese_level_hiragana integer CHECK (japanese_level_h
 ADD COLUMN IF NOT EXISTS japanese_level_katakana integer CHECK (japanese_level_katakana IN (0, 25, 50, 75, 100)),
 ADD COLUMN IF NOT EXISTS japanese_level_kanji integer CHECK (japanese_level_kanji IN (0, 25, 50, 75, 100)),
 ADD COLUMN IF NOT EXISTS age integer,
-ADD COLUMN IF NOT EXISTS gender text;
+ADD COLUMN IF NOT EXISTS gender text,
+ADD COLUMN IF NOT EXISTS contact_email text;
 
 -- Allow companies to see who saved their jobs
 CREATE POLICY "Companies can view saves for their jobs" ON public.saved_jobs FOR SELECT USING (
