@@ -77,19 +77,34 @@ const UserDashboard = () => {
   }, [profile, reset]);
 
   const onSubmitProfile = async (data) => {
-    setLoading(true);
-    setSaveSuccess(false);
-    const { error } = await supabase.from('profiles').update(data).eq('id', profile.id);
-    setLoading(false);
-    if (!error) {
+    try {
+      setLoading(true);
+      setSaveSuccess(false);
+
+      if (!profile?.id) {
+        throw new Error("Perfil de usuário não carregado. Recarregue a página.");
+      }
+
+      // Evita o erro do PostgreSQL de sintaxe inválida ("") para colunas do tipo date
+      const payload = { ...data };
+      if (!payload.visa_expiry_date) {
+        payload.visa_expiry_date = null;
+      }
+
+      const { error } = await supabase.from('profiles').update(payload).eq('id', profile.id);
+      
+      if (error) throw error;
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-      if (data.name !== profile?.name) {
-        setProfile({ ...profile, name: data.name });
+      if (payload.name !== profile?.name) {
+        setProfile({ ...profile, name: payload.name });
       }
-    } else {
-      console.error("Erro ao salvar perfil:", error);
-      alert("Erro ao salvar: Verifique se as migrations foram aplicadas no banco de dados.");
+    } catch (err) {
+      console.error("Erro ao salvar perfil:", err);
+      alert("Erro ao salvar: " + (err.message || 'Verifique se as migrations foram rodadas no Supabase.'));
+    } finally {
+      setLoading(false);
     }
   };
 
