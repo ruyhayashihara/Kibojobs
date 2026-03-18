@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/index';
 import { supabase } from '../lib/supabase';
 import JobCard from '../components/JobCard.jsx';
@@ -6,6 +7,7 @@ import { Bookmark, User, Settings, Loader2, CheckCircle2 } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
   const { session, profile, setProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState('vagas-salvas');
   const [savedJobs, setSavedJobs] = useState([]);
@@ -120,12 +122,19 @@ const UserDashboard = () => {
     }
   };
 
+  // Auto-redirect companies to their own dashboard (must be before any return)
+  useEffect(() => {
+    if (profile && profile.role === 'company') {
+      navigate('/empresa/dashboard', { replace: true });
+    }
+  }, [profile, navigate]);
+
   if (!session) {
     return <div className="p-10 text-center text-slate-500 font-medium">Carregando painel do candidato...</div>;
   }
 
-  if (profile && profile.role !== 'seeker') {
-    return <div className="p-10 text-center text-slate-500 font-medium">Dashboard restrito para candidatos.</div>;
+  if (profile && profile.role === 'company') {
+    return <div className="p-10 text-center text-slate-500 font-medium">Redirecionando para o painel corporativo...</div>;
   }
 
   const renderLvlSlider = (name, label, control) => (

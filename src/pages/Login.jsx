@@ -28,12 +28,22 @@ const Login = () => {
     setLoading(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
       if (error) throw error;
+
+      // Detect role and redirect to correct dashboard
+      const userId = authData?.user?.id;
+      if (userId && from === '/dashboard') {
+        const { data: profileData } = await supabase.from('profiles').select('role').eq('id', userId).single();
+        if (profileData?.role === 'company') {
+          navigate('/empresa/dashboard', { replace: true });
+          return;
+        }
+      }
       navigate(from, { replace: true });
     } catch (error) {
       setError(error.message === 'Invalid login credentials' ? 'Credenciais inválidas' : error.message);
