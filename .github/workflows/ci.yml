@@ -1,0 +1,37 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci || npm install
+      
+    - name: Lint
+      run: npm run lint
+      
+    - name: Build
+      run: npm run build
+      env:
+        # Dummy variables so build won't fail if they are required in vite config
+        VITE_SUPABASE_URL: "https://example.supabase.co"
+        VITE_SUPABASE_ANON_KEY: "dummy-key"
+        
+    - name: Run Tests
+      # If tests exist, run them
+      run: npm run test --if-present

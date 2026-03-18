@@ -1,0 +1,22 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "apply": "Apply",
+    "login": "Log in",
+    "register": "Sign up"
+  },
+  "nav": {
+    "jobs": "Jobs",
+    "companies": "Companies",
+    "dashboard": "Dashboard",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero_title": "Find your dream job",
+    "hero_subtitle": "Join thousands of professionals and companies in the best opportunities",
+    "search_placeholder": "Job title, keyword or company",
+    "location_placeholder": "Location",
+    "search_button": "Search Jobs"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "apply": "Aplicar",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "nav": {
+    "jobs": "Empleos",
+    "companies": "Empresas",
+    "dashboard": "Panel",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero_title": "Encuentra el trabajo de tus sueños",
+    "hero_subtitle": "Únete a miles de profesionales y empresas en las mejores oportunidades",
+    "search_placeholder": "Puesto, palabra clave o empresa",
+    "location_placeholder": "Ubicación",
+    "search_button": "Buscar Empleos"
+  }
+}
