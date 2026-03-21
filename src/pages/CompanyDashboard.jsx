@@ -5,12 +5,16 @@ import { useForm } from 'react-hook-form';
 import { Building, PlusCircle, Briefcase, ExternalLink, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { JAPANESE_JOB_TYPES, JAPANESE_WORK_MODES } from '../utils/japaneseUtils';
+import { formatCurrency } from '../components/JobCard.jsx';
 
 const CompanyDashboard = () => {
+  const { t } = useTranslation();
   const { session, profile } = useAuthStore();
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [activeTab, setActiveTab] = useState('minhas-vagas');
+  const [activeTab, setActiveTab] = useState('my-jobs');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -57,21 +61,21 @@ const CompanyDashboard = () => {
         location: data.location,
         job_type: data.job_type,
         work_mode: data.work_mode,
-        salary_min: data.salary_min ? parseInt(data.salary_min) : null,
-        salary_max: data.salary_max ? parseInt(data.salary_max) : null,
-        industry: data.industry || 'Geral',
+        salary_min: data.salary_min ? parseInt(data.salary_min) * 10000 : null,
+        salary_max: data.salary_max ? parseInt(data.salary_max) * 10000 : null,
+        industry: data.industry || 'General',
         is_active: true
       };
 
       const { data: newJob, error } = await supabase.from('jobs').insert(payload).select().single();
       if (error) throw error;
 
-      setSuccessMsg('Vaga publicada com sucesso no VagasJP!');
+      setSuccessMsg('求人が公開されました！');
       setJobs([newJob, ...jobs]);
       reset();
       setTimeout(() => {
         setSuccessMsg('');
-        setActiveTab('minhas-vagas');
+        setActiveTab('my-jobs');
       }, 3000);
     } catch (err) {
       console.error(err);
@@ -81,11 +85,11 @@ const CompanyDashboard = () => {
     }
   };
 
-  if (!session) return <div className="p-20 text-center font-medium text-slate-500">Recuperando sessão...</div>;
-  if (loading) return <div className="p-20 text-center font-medium text-slate-500">Recuperando painel corporativo...</div>;
+    if (!session) return <div className="p-20 text-center font-medium text-slate-500">{t('common.loading')}</div>;
+  if (loading) return <div className="p-20 text-center font-medium text-slate-500">{t('common.loading')}</div>;
 
   if (profile && profile.role !== 'company') {
-    return <div className="p-20 text-center font-medium text-red-500">Acesso restrito. Sua conta cadastrada não é empresarial.</div>;
+    return <div className="p-20 text-center font-medium text-red-500">アクセス権限がありません</div>;
   }
 
   return (
@@ -104,24 +108,24 @@ const CompanyDashboard = () => {
 
         <nav className="space-y-2">
           <button
-            onClick={() => setActiveTab('minhas-vagas')}
+            onClick={() => setActiveTab('my-jobs')}
             className={classNames('w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-colors', {
-              'bg-primary/10 text-primary': activeTab === 'minhas-vagas',
-              'text-slate-600 hover:bg-slate-50': activeTab !== 'minhas-vagas'
+              'bg-primary/10 text-primary': activeTab === 'my-jobs',
+              'text-slate-600 hover:bg-slate-50': activeTab !== 'my-jobs'
             })}
           >
             <Briefcase size={20} />
-            Minhas Vagas
+            {t('company.my_jobs')}
           </button>
           <button
-            onClick={() => setActiveTab('nova-vaga')}
+            onClick={() => setActiveTab('new-job')}
             className={classNames('w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-colors', {
-              'bg-primary/10 text-primary': activeTab === 'nova-vaga',
-              'text-slate-600 hover:bg-slate-50': activeTab !== 'nova-vaga'
+              'bg-primary/10 text-primary': activeTab === 'new-job',
+              'text-slate-600 hover:bg-slate-50': activeTab !== 'new-job'
             })}
           >
             <PlusCircle size={20} />
-            Publicar Nova Vaga
+            {t('company.post_job')}
           </button>
         </nav>
       </aside>
@@ -129,28 +133,28 @@ const CompanyDashboard = () => {
       {/* Main Content */}
       <main className="flex-1 min-w-0 bg-surface rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
         
-        {activeTab === 'minhas-vagas' && (
+        {activeTab === 'my-jobs' && (
           <div>
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h1 className="text-2xl font-heading font-extrabold text-slate-900">Gerenciar Vagas</h1>
-                <p className="text-slate-500 font-medium mt-1">Acompanhe as suas vagas ativas no VagasJP.</p>
+                <h1 className="text-2xl font-heading font-extrabold text-slate-900">求人は管理</h1>
+                <p className="text-slate-500 font-medium mt-1">掲載中の求人を確認できます</p>
               </div>
               <button 
-                onClick={() => setActiveTab('nova-vaga')}
+                onClick={() => setActiveTab('new-job')}
                 className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors shadow-sm"
                >
-                 + Nova Vaga
+                 + 新規求人
               </button>
             </div>
 
             {jobs.length === 0 ? (
               <div className="py-20 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                 <Briefcase size={40} className="mx-auto text-slate-300 mb-4" />
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Nenhuma vaga publicada</h3>
-                <p className="text-slate-500 mb-4">Sua empresa ainda não possui anúncios ativos.</p>
-                <button onClick={() => setActiveTab('nova-vaga')} className="text-primary font-bold hover:underline">
-                  Publique sua primeira vaga
+                <h3 className="text-lg font-bold text-slate-900 mb-2">求人がありません</h3>
+                <p className="text-slate-500 mb-4">まだ求人を公開していません</p>
+                <button onClick={() => setActiveTab('new-job')} className="text-primary font-bold hover:underline">
+                  最初の求人を公開する
                 </button>
               </div>
             ) : (
@@ -165,12 +169,12 @@ const CompanyDashboard = () => {
                         <span className="capitalize">{job.work_mode}</span>
                         <span>•</span>
                         <span className={classNames('px-2 py-0.5 rounded-md text-xs', job.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500')}>
-                          {job.is_active ? 'Ativa' : 'Pausada'}
+                          {job.is_active ? '募集 中' : '停止 中'}
                         </span>
                       </div>
                     </div>
                     <Link to={`/vagas/${job.id}`} className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-dark">
-                      Ver página <ExternalLink size={16} />
+                      詳細 <ExternalLink size={16} />
                     </Link>
                   </div>
                 ))}
@@ -179,9 +183,9 @@ const CompanyDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'nova-vaga' && (
+        {activeTab === 'new-job' && (
           <div>
-            <h1 className="text-2xl font-heading font-extrabold text-slate-900 mb-8">Publicar Nova Vaga</h1>
+            <h1 className="text-2xl font-heading font-extrabold text-slate-900 mb-8">{t('company.post_job')}</h1>
             
             {successMsg && (
               <div className="mb-6 bg-green-50 text-green-700 p-4 rounded-2xl border border-green-200 font-bold flex items-center gap-2">
@@ -192,51 +196,51 @@ const CompanyDashboard = () => {
 
             <form onSubmit={handleSubmit(onSubmitJob)} className="space-y-6 max-w-2xl">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Título da Vaga</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">{t('jobs.title')}</label>
                 <input
                   {...register('title', { required: true })}
                   type="text"
-                  placeholder="Ex: Desenvolvedor Frontend React"
+                  placeholder="例: React開発エンジニア"
                   className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Localização</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('profile.location')}</label>
                   <input
                     {...register('location', { required: true })}
                     type="text"
-                    placeholder="Ex: Tokyo, Japan"
+                    placeholder="例: 東京都渋谷区"
                     className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Modelo de Trabalho</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('jobs.work_mode')}</label>
                   <select {...register('work_mode', { required: true })} className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100 cursor-pointer">
-                    <option value="on-site">Presencial</option>
-                    <option value="hybrid">Híbrido</option>
-                    <option value="remote">Remoto</option>
+                    {JAPANESE_WORK_MODES.map(mode => (
+                      <option key={mode.value} value={mode.value}>{mode.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Salário Mensal Mínimo (¥)</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('jobs.salary')} (万円)</label>
                   <input
                     {...register('salary_min')}
                     type="number"
-                    placeholder="300000"
+                    placeholder="例: 300"
                     className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Salário Mensal Máximo (¥)</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('jobs.salary')} (万円)</label>
                   <input
                     {...register('salary_max')}
                     type="number"
-                    placeholder="500000"
+                    placeholder="例: 500"
                     className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
                   />
                 </div>
@@ -244,31 +248,30 @@ const CompanyDashboard = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Tipo de Contrato</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('jobs.contract_type')}</label>
                   <select {...register('job_type', { required: true })} className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100 cursor-pointer">
-                    <option value="CLT">Seishain (Full-time)</option>
-                    <option value="PJ">Keiyaku Shain (Contract)</option>
-                    <option value="Freelance">Gyomu Itaku (Freelance)</option>
-                    <option value="Estágio">Arubaito / Part-time</option>
+                    {JAPANESE_JOB_TYPES.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Setor (Indústria)</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('company.industry')}</label>
                   <input
                     {...register('industry')}
                     type="text"
-                    placeholder="Ex: Tecnologia, Manufatura..."
+                    placeholder="例: IT・テクノロジー"
                     className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Descrição Completa e Requisitos</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">{t('jobs.description')}</label>
                 <textarea
                   {...register('description', { required: true })}
                   rows={8}
-                  placeholder="Escreva sobre as responsabilidades, nível de japonês necessário (Ex: N2), se há suporte de visto e os principais benefícios..."
+                  placeholder="職務内容、求められる日本語レベル（N2以上など）、ビザのサポートの有無、福利厚生などを記載してください..."
                   className="w-full rounded-xl bg-slate-50 border-none px-4 py-3 focus:ring-2 focus:ring-accent transition-colors hover:bg-slate-100 resize-none"
                 />
               </div>
@@ -278,7 +281,7 @@ const CompanyDashboard = () => {
                 disabled={submitting}
                 className="w-full py-4 bg-accent hover:bg-accent-dark text-primary-dark font-extrabold rounded-xl transition-all shadow-[0_4px_14px_0_rgba(190,242,100,0.39)] hover:shadow-[0_6px_20px_rgba(190,242,100,0.23)] active:scale-95 disabled:opacity-50 disabled:shadow-none"
               >
-                {submitting ? 'Salvando Vaga e Sincronizando...' : 'Publicar Vaga Otimizada 🚀'}
+                {submitting ? '保存中...' : '求人を公開する'}
               </button>
             </form>
           </div>

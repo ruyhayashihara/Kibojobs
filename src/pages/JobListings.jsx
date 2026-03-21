@@ -3,12 +3,14 @@ import { supabase } from '../lib/supabase';
 import JobCard from '../components/JobCard.jsx';
 import AdSlot from '../components/AdSlot.jsx';
 import { Search, MapPin, Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { JAPANESE_JOB_TYPES, JAPANESE_WORK_MODES } from '../utils/japaneseUtils';
 
 const JobListings = () => {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // mock for now
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
@@ -22,10 +24,9 @@ const JobListings = () => {
       if (!error && data) {
         setJobs(data);
       } else {
-        // Fallback mock if data doesn't exist yet
         setJobs([
-          { id: '1', title: 'Desenvolvedor React Pleno', companies: { name: 'Acme Corp' }, location: 'Tokyo, JP', work_mode: 'Híbrido', job_type: 'Full-time', salary_min: 400000, salary_max: 600000, is_featured: true, created_at: new Date().toISOString() },
-          { id: '2', title: 'Engenheiro de Software Sênior', companies: { name: 'Global Tech' }, location: 'Remoto', work_mode: 'Remoto', job_type: 'Contract', salary_min: 700000, created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+          { id: '1', title: 'React Developer', companies: { name: 'Acme Corp' }, location: 'Tokyo', work_mode: 'hybrid', job_type: 'seishain', salary_min: 400000, salary_max: 600000, is_featured: true, created_at: new Date().toISOString() },
+          { id: '2', title: 'Senior Engineer', companies: { name: 'Global Tech' }, location: 'Remote', work_mode: 'remote', job_type: 'keiyaku', salary_min: 700000, created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
         ]);
       }
       setLoading(false);
@@ -38,54 +39,52 @@ const JobListings = () => {
     <div className="bg-base min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Search Header */}
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-3 mb-10 overflow-hidden">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-3.5 h-6 w-6 text-slate-400" />
-              <input type="text" placeholder="Cargo, palavra-chave ou empresa" className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-accent font-medium text-slate-900 outline-none transition-colors hover:bg-slate-100" />
+              <input type="text" placeholder={t('home.search_placeholder')} className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-accent font-medium text-slate-900 outline-none transition-colors hover:bg-slate-100" />
             </div>
             <div className="flex-1 relative">
               <MapPin className="absolute left-4 top-3.5 h-6 w-6 text-slate-400" />
-              <input type="text" placeholder="Localização" className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-accent font-medium text-slate-900 outline-none transition-colors hover:bg-slate-100" />
+              <input type="text" placeholder={t('home.location_placeholder')} className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-accent font-medium text-slate-900 outline-none transition-colors hover:bg-slate-100" />
             </div>
             <button className="btn-primary">
-              Buscar
+              {t('home.search_button')}
             </button>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* Filters Sidebar */}
           <div className="w-full lg:w-1/4">
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 sticky top-28">
               <div className="flex items-center space-x-3 mb-8 border-b border-slate-100 pb-5">
                 <div className="p-2 bg-slate-50 rounded-lg">
                   <Filter size={20} className="text-slate-600" />
                 </div>
-                <h3 className="font-heading font-extrabold text-xl text-slate-900 tracking-tight">Filtros</h3>
+                <h3 className="font-heading font-extrabold text-xl text-slate-900 tracking-tight">{t('jobs.filters')}</h3>
               </div>
               
               <div className="space-y-8">
                 <div>
-                  <h4 className="font-bold text-slate-900 mb-4">Modelo de Trabalho</h4>
+                  <h4 className="font-bold text-slate-900 mb-4">{t('jobs.work_mode')}</h4>
                   <div className="space-y-3">
-                    {['Remoto', 'Híbrido', 'Presencial'].map(mode => (
-                      <label key={mode} className="flex items-center cursor-pointer group">
+                    {JAPANESE_WORK_MODES.map(mode => (
+                      <label key={mode.value} className="flex items-center cursor-pointer group">
                         <input type="checkbox" className="rounded border-slate-200 text-primary focus:ring-accent w-5 h-5 transition-shadow" />
-                        <span className="ml-3 text-slate-600 font-medium group-hover:text-slate-900 transition-colors">{mode}</span>
+                        <span className="ml-3 text-slate-600 font-medium group-hover:text-slate-900 transition-colors">{mode.label}</span>
                       </label>
                     ))}
                   </div>
                 </div>
                 
                 <div>
-                  <h4 className="font-bold text-slate-900 mb-4">Tipo de Contrato</h4>
+                  <h4 className="font-bold text-slate-900 mb-4">{t('jobs.contract_type')}</h4>
                   <div className="space-y-3">
-                    {['CLT', 'PJ', 'Freelance', 'Estágio'].map(type => (
-                      <label key={type} className="flex items-center cursor-pointer group">
+                    {JAPANESE_JOB_TYPES.map(type => (
+                      <label key={type.value} className="flex items-center cursor-pointer group">
                         <input type="checkbox" className="rounded border-slate-200 text-primary focus:ring-accent w-5 h-5 transition-shadow" />
-                        <span className="ml-3 text-slate-600 font-medium group-hover:text-slate-900 transition-colors">{type}</span>
+                        <span className="ml-3 text-slate-600 font-medium group-hover:text-slate-900 transition-colors">{type.label}</span>
                       </label>
                     ))}
                   </div>
@@ -94,13 +93,12 @@ const JobListings = () => {
             </div>
           </div>
 
-          {/* Job Results */}
           <div className="flex-1">
             <div className="mb-6 flex justify-between items-center">
-              <h2 className="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">{jobs.length} vagas encontradas</h2>
+              <h2 className="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">{jobs.length}件の求人</h2>
               <select className="border-none bg-white shadow-sm ring-1 ring-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-accent py-2.5 px-4 outline-none">
-                <option>Mais recentes</option>
-                <option>Maior salário</option>
+                <option>新着順</option>
+                <option>給与高い順</option>
               </select>
             </div>
             
@@ -130,8 +128,8 @@ const JobListings = () => {
                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Search className="text-slate-300" size={32} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Nenhuma vaga encontrada</h3>
-                <p className="text-slate-500 font-medium">Tente ajustar seus filtros para ver mais resultados.</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t('jobs.no_jobs_found')}</h3>
+                <p className="text-slate-500 font-medium">{t('jobs.try_adjust_filters')}</p>
               </div>
             )}
           </div>
